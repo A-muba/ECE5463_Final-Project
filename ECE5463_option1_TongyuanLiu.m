@@ -14,32 +14,32 @@ wn1 = 40; wn2 = 20; wn3 = 10; % can be changed
 Kp = diag([wn1^2, wn2^2 wn3^2]);
 Kv = diag([2*zeta*wn1, 2*zeta*wn2 2*zeta*wn3]);
                
-% % Position parameter input
-% % source from Youtube "ENGR 1315 - MATLAB - inputdlg to Create Kinematics Calculator"
-% % https://www.youtube.com/watch?v=61HeXe64A6Y
-% prompt = { ...
-%     'Enter PICK 1 as "x y":', ...
-%     'Enter PLACE 1 as "x y":', ...
-%     'Enter PICK 2 as "x y":', ...
-%     'Enter PLACE 2 as "x y":' ...
-% };
-% dlgtitle = 'Input Parameters';
-% dims = [1 35]; % input field width (characters)
-% definput = {'', '', '', '', ''}; % default values
-% input_value = inputdlg(prompt, dlgtitle, dims, definput);
-% 
-% if isempty(input_value)
-% error('User cancelled.');
-% end
-% 
-% pick1_xy = str2num(input_value{1}); % user enters "10 20"
-% P_pick_1_xy = pick1_xy(:); % force column vector [x; y]
-% place1_xy = str2num(input_value{2});
-% P_place_1_xy = place1_xy(:);
-% pick2_xy = str2num(input_value{3}); % user enters "10 20"
-% P_pick_2_xy = pick2_xy(:); % force column vector [x; y]
-% place2_xy = str2num(input_value{4});
-% P_place_2_xy = place2_xy(:);
+% Position parameter input
+% source from Youtube "ENGR 1315 - MATLAB - inputdlg to Create Kinematics Calculator"
+% https://www.youtube.com/watch?v=61HeXe64A6Y
+prompt = { ...
+    'Enter PICK 1 as "x y":', ...
+    'Enter PLACE 1 as "x y":', ...
+    'Enter PICK 2 as "x y":', ...
+    'Enter PLACE 2 as "x y":' ...
+};
+dlgtitle = 'Input Parameters';
+dims = [1 35]; % input field width (characters)
+definput = {'', '', '', '', ''}; % default values
+input_value = inputdlg(prompt, dlgtitle, dims, definput);
+
+if isempty(input_value)
+error('User cancelled.');
+end
+
+pick1_xy = str2num(input_value{1}); % user enters "10 20"
+P_pick_1_xy = pick1_xy(:); % force column vector [x; y]
+place1_xy = str2num(input_value{2});
+P_place_1_xy = place1_xy(:);
+pick2_xy = str2num(input_value{3}); % user enters "10 20"
+P_pick_2_xy = pick2_xy(:); % force column vector [x; y]
+place2_xy = str2num(input_value{4});
+P_place_2_xy = place2_xy(:);
 
 % for test
 % P_pick_1_xy = [15; 0]; P_place_1_xy = [20; 0];
@@ -48,8 +48,8 @@ Kv = diag([2*zeta*wn1, 2*zeta*wn2 2*zeta*wn3]);
 % P_pick_2_xy = [9; 26]; P_place_2_xy = [28; 3];
 % P_pick_1_xy = [20; 21]; P_place_1_xy = [6; 27];
 % P_pick_2_xy = [18; 16]; P_place_2_xy = [25; 5];
-P_pick_1_xy = [12; 24];P_place_1_xy = [22; 10];
-P_pick_2_xy = [7; 28];P_place_2_xy = [27; 4];
+% P_pick_1_xy = [12; 24];P_place_1_xy = [22; 10];
+% P_pick_2_xy = [7; 28];P_place_2_xy = [27; 4];
 [Pick_1_th1, Pick_1_th2, Pick_1_th3] = IK_component(P_pick_1_xy, L1, L2, L3);
 [Place_1_th1, Place_1_th2, Place_1_th3] = IK_component(P_place_1_xy, L1, L2, L3);
 [Pick_2_th1, Pick_2_th2, Pick_2_th3] = IK_component(P_pick_2_xy, L1, L2, L3);
@@ -64,24 +64,14 @@ P_place_2_rad = [Place_2_th1; Place_2_th2; Place_2_th3];
 
 % Position holding time
 % P_org->A, Pick1->B, Place1->C, Pick2->D, Place2->E
-T_A2B = 1.5;
-T_holdB = 1;
-T_B2C = 1.5; 
-T_holdC = 1;
-T_C2D = 1.5;
-T_holdD = 1;
-T_D2E = 1.5;
-T_holdE = 1;
+T_A2B = 1.5; T_holdB = 1; T_B2C = 1.5; T_holdC = 1;
+T_C2D = 1.5; T_holdD = 1; T_D2E = 1.5; T_holdE = 1;
 
 % total lasting time, for polt
-T1 = T_A2B; 
-T2 = T_A2B + T_holdB;
-T3 = T_A2B + T_holdB + T_B2C;
-T4 = T_A2B + T_holdB + T_B2C + T_holdC;
-T5 = T_A2B + T_holdB + T_B2C + T_holdC + T_C2D;
-T6 = T_A2B + T_holdB + T_B2C + T_holdC + T_C2D + T_holdD;
-T7 = T_A2B + T_holdB + T_B2C + T_holdC + T_C2D + T_holdD + T_D2E;
-T8 = T_A2B + T_holdB + T_B2C + T_holdC + T_C2D + T_holdD + T_D2E + T_holdE;
+dur = [T_A2B, T_holdB, T_B2C, T_holdC, T_C2D, T_holdD, T_D2E, T_holdE];
+T = cumsum(dur);
+T1 = T(1); T2 = T(2); T3 = T(3); T4 = T(4);
+T5 = T(5); T6 = T(6); T7 = T(7); T8 = T(8);
 
 % Get the theta parameter for later calculation
 % the frameware of the algorithm is from my own work PA3 with different parameter 
@@ -105,7 +95,7 @@ dtheta1 = 0; dtheta2 = 0; dtheta3 = 0;
 ang = [theta1; theta2; theta3; dtheta1; dtheta2; dtheta3];
 
 % Plot the solution for t=0 to T8
-dt = 1/120;                 % 帧间隔
+dt = 1/120;
 t = 0:dt:T8; 
 ode45_function_component = @(t,x)closedloop_3R(t,x,params_eom);
 [t, x] = ode45(ode45_function_component, t, ang);
@@ -136,28 +126,126 @@ hLink2 = plot([0,0],[0,0], '-o', 'LineWidth',3,'MarkerSize',6,'MarkerFaceColor',
 hLink3 = plot([0,0],[0,0], '-o', 'LineWidth',3,'MarkerSize',6,'MarkerFaceColor',[0.2 0.6 1.0], 'Color',[0.2 0.3 0.4],'DisplayName','link3');
 hTrace = plot(nan, nan,':', 'Color',[0.5 0.5 0.5]);
 ee_trace = nan(length(t), 2);
+
+% animate box been picked and place
+box_size = 1; half_box = box_size/2;
+box1_pos = [P_pick_1_xy(1)-half_box, P_pick_1_xy(2)-half_box, box_size, box_size];
+box2_pos = [P_pick_2_xy(1)-half_box, P_pick_2_xy(2)-half_box, box_size, box_size];
+hbox1 = rectangle('Position', box1_pos, 'FaceColor',[0.5 1 0.5], 'EdgeColor',[0 0.5 0], 'LineWidth',1.5);
+hbox2 = rectangle('Position', box2_pos, 'FaceColor',[0.6 0.6 1], 'EdgeColor',[0 0.2 0.8], 'LineWidth',1.5);
+
+% animate the jaw
+hjaw1 = plot([0,0],[0,0], '-','Color',[0.1 0.1 0.1],'LineWidth',2);
+hjaw2 = plot([0,0],[0,0], '-','Color',[0.1 0.1 0.1],'LineWidth',2);
+jaw_open_pick = deg2rad(0);   % open at approach
+jaw_closed = deg2rad(60);    % closed when grasping
+jaw_len = 1.0;
+
+% state machine for grasping
+carry1 = false; placed1 = false;
+carry2 = false; placed2 = false;
+
 for k = 1:length(t)
     q1 = x(k,1); q2 = x(k,2); q3 = x(k,3);
     p0 = [0;0];
     p1 = p0 + [L1*cos(q1); L1*sin(q1)];
     p2 = p1 + [L2*cos(q1+q2); L2*sin(q1+q2)];
     p3 = p2 + [L3*cos(q1+q2+q3); L3*sin(q1+q2+q3)];
+    theta_ee = q1 + q2 + q3;
     set(hLink1,'XData',[p0(1) p1(1)], 'YData',[p0(2) p1(2)]);
     set(hLink2,'XData',[p1(1) p2(1)], 'YData',[p1(2) p2(2)]);
     set(hLink3,'XData',[p2(1) p3(1)], 'YData',[p2(2) p3(2)]);
     ee_trace(k,:) = p3.';
     set(hTrace, 'XData', ee_trace(1:k,1), 'YData', ee_trace(1:k,2));
+    
+    tk = t(k);
+    % Phases (from your T1..T7 definition):
+    % [0, T1]->Pick1; [T1, T2]->Pick1; [T2, T3]->Place1; [T3, T4]->Place1
+    % [T4, T5]->Pick2; [T5, T6]->Pick2; [T6, T7]->Place2; [T7, end]->Place2
+    jaw_open_now = jaw_open_pick;
+    
+    % Handle Pick1 grasp
+    if ~carry1 && ~placed1
+        if tk < T1
+            jaw_open_now = jaw_open_pick; % approaching open
+        elseif tk >= T1 && tk <= T2
+            % Close and latch box1
+            jaw_open_now = jaw_closed;
+            carry1 = true;
+        end
+    end
+    % Carry box1 while moving to Place1
+    if carry1 && ~placed1
+        jaw_open_now = jaw_closed;
+        if tk >= T2 && tk < T3
+            % carrying during motion
+        elseif tk >= T3 && tk <= T4
+            % At Place1: release
+            jaw_open_now = jaw_open_pick;
+            carry1 = false;
+            placed1 = true;
+            % snap box1 to place1 position
+            box1_pos = [P_place_1_xy(1)-half_box, P_place_1_xy(2)-half_box, box_size, box_size];
+            set(hbox1,'Position', box1_pos);
+        end
+    end
+    % Handle Pick2 grasp
+    if ~carry2 && ~placed2 && tk >= T4
+        if tk < T5
+            jaw_open_now = jaw_open_pick;
+        elseif tk >= T5 && tk <= T6
+            jaw_open_now = jaw_closed;
+            carry2 = true;
+        end
+    end
+    % Carry box2 while moving to Place2
+    if carry2 && ~placed2
+        jaw_open_now = jaw_closed;
+        if tk >= T6 && tk < T7
+            % carrying
+        elseif tk >= T7
+            jaw_open_now = jaw_open_pick;
+            carry2 = false;
+            placed2 = true;
+            box2_pos = [P_place_2_xy(1)-half_box, P_place_2_xy(2)-half_box, box_size, box_size];
+            set(hbox2,'Position', box2_pos);
+        end
+    end
+    
+    % update gripper drawing and make the box follow the EE
+    setGripper(hjaw1, hjaw2, p3, theta_ee, jaw_open_now, jaw_len);
+    if carry1
+        set(hbox1,'Position',[p3(1)-half_box, p3(2)-half_box, box_size, box_size]);
+    end
+    if carry2
+        set(hbox2,'Position',[p3(1)-half_box, p3(2)-half_box, box_size, box_size]);
+    end
+    
     drawnow;
-
     if k < length(t)
         pause(max(0, t(k+1)-t(k)));
     end
 end
 
+function setGripper(hjaw1,hjaw2,pEE,theta_ee,jaw_open,len)
+    % draw jaws perpendicular to EE x-axis, opening angle around it.
+    ex = [cos(theta_ee); sin(theta_ee)];
+    ey = [-sin(theta_ee); cos(theta_ee)];
+    % jaw direction vectors (symmetric about ey)
+    v1 = cos(jaw_open)*ey + sin(jaw_open)*ex;
+    v2 = -cos(jaw_open)*ey + sin(jaw_open)*ex;
+    p1 = pEE; p2 = pEE;
+    p1_tip = p1 + len*v1;
+    p2_tip = p2 + len*v2;
+    set(hjaw1,'XData',[p1(1) p1_tip(1)], 'YData',[p1(2) p1_tip(2)]);
+    set(hjaw2,'XData',[p2(1) p2_tip(1)], 'YData',[p2(2) p2_tip(2)]);
+end
+
 % Inverse Kinematic solution(written by hand, source from HW4 solution)
 function [theta1, theta2, theta3] = IK_component(target_xy, L1, L2, L3)
     x = target_xy(1); y = target_xy(2);
-    
+    % Set phi to “point toward the target” 
+    % so the 3R robot arm can reach as many positions as possible within a radius of 30.
     r = hypot(x, y);
     if r < 1e-12
         phi = 0;  % original point
@@ -167,6 +255,7 @@ function [theta1, theta2, theta3] = IK_component(target_xy, L1, L2, L3)
     wx = x - L3*cos(phi);
     wy = y - L3*sin(phi);
     
+    % Ensure that the geometric solutions for the two-link IK exist
     d = hypot(wx, wy);
     d_min = max(1e-9, abs(L1 - L2) + 1e-9);
     d_max = L1 + L2 - 1e-9;
@@ -201,37 +290,22 @@ end
 % Use element from EoM to build PD controler, equation source from Lecture17 Page 4 and Page 9
 % Also use ode for later plot
 function dx = closedloop_3R(t,x,params)
-    % origial value
-    q = x(1:3); dq = x(4:6); 
-    
     % expected value
+    q = x(1:3); dq = x(4:6); 
     qd = params.qd_fun(t);
     dqd = params.dqd_fun(t);
     ddqd = params.ddqd_fun(t);
-    if numel(qd)~=3 || numel(dqd)~=3 || numel(ddqd)~=3
-        error('qd_fun/dqd_fun/ddqd_fun must each return a 3x1 vector.');
-    end
-    if any(~isfinite([qd; dqd; ddqd]))
-        error('qd/dqd/ddqd contain NaN/Inf. Check your trajectory functions and inputs.');
-    end
-    
-    % error calculation
-    err = qd - q; derr = dqd - dq;
+    err = qd - q; derr = dqd - dq; % error calculation
     
     % calculate EoM element
     [M,C,G] = EoM_3R_terms([q,dq],...
                             params.L1,params.L2,params.L3,...
                             params.m1,params.m2,params.m3,...
-                            params.g);
-    if ~isequal(size(params.Kp), [3 3]) || ~isequal(size(params.Kv), [3 3])
-        error('Kp and Kv must be 3x3 matrices.');
-    end
-    
+                            params.g);    
     % calculate the velocity, use velocity to compute tau
     % source from Lecture17 Page 9
     V = ddqd + params.Kv*derr + params.Kp*err;
     tau = M*V + C + G;
-    
     ddq = M\(tau - C - G);
     dx = [dq; ddq];
 end
