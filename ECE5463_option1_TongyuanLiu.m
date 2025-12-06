@@ -10,7 +10,7 @@ g = 9.8;
 
 % PD controler
 zeta = 1.0; % from Lecture 17 Page 4 -- Critically damped
-wn1 = 20; wn2 = 10; wn3 = 5; % can be changed
+wn1 = 40; wn2 = 20; wn3 = 10; % can be changed
 Kp = diag([wn1^2, wn2^2 wn3^2]);
 Kv = diag([2*zeta*wn1, 2*zeta*wn2 2*zeta*wn3]);
                
@@ -41,8 +41,15 @@ Kv = diag([2*zeta*wn1, 2*zeta*wn2 2*zeta*wn3]);
 % place2_xy = str2num(input_value{4});
 % P_place_2_xy = place2_xy(:);
 
-P_pick_1_xy = [15; 0]; P_place_1_xy = [20; 0];
-P_pick_2_xy = [25; 0]; P_place_2_xy = [30; 0];
+% for test
+% P_pick_1_xy = [15; 0]; P_place_1_xy = [20; 0];
+% P_pick_2_xy = [25; 0]; P_place_2_xy = [30; 0];
+% P_pick_1_xy = [15; 12]; P_place_1_xy = [24; 7];
+% P_pick_2_xy = [9; 26]; P_place_2_xy = [28; 3];
+% P_pick_1_xy = [20; 21]; P_place_1_xy = [6; 27];
+% P_pick_2_xy = [18; 16]; P_place_2_xy = [25; 5];
+P_pick_1_xy = [12; 24];P_place_1_xy = [22; 10];
+P_pick_2_xy = [7; 28];P_place_2_xy = [27; 4];
 [Pick_1_th1, Pick_1_th2, Pick_1_th3] = IK_component(P_pick_1_xy, L1, L2, L3);
 [Place_1_th1, Place_1_th2, Place_1_th3] = IK_component(P_place_1_xy, L1, L2, L3);
 [Pick_2_th1, Pick_2_th2, Pick_2_th3] = IK_component(P_pick_2_xy, L1, L2, L3);
@@ -50,10 +57,10 @@ P_pick_2_xy = [25; 0]; P_place_2_xy = [30; 0];
 
 % position initial
 P_org_rad = [0; 0; 0];                     
-P_pick_1_rad = [deg2rad(Pick_1_th1); deg2rad(Pick_1_th2); deg2rad(Pick_1_th3)];
-P_place_1_rad = [deg2rad(Place_1_th1); deg2rad(Place_1_th2); deg2rad(Place_1_th3)];
-P_pick_2_rad = [deg2rad(Pick_2_th1); deg2rad(Pick_2_th2); deg2rad(Pick_2_th3)];
-P_place_2_rad = [deg2rad(Place_2_th1); deg2rad(Place_2_th2); deg2rad(Place_2_th3)];
+P_pick_1_rad = [Pick_1_th1; Pick_1_th2; Pick_1_th3];
+P_place_1_rad = [Place_1_th1; Place_1_th2; Place_1_th3];
+P_pick_2_rad = [Pick_2_th1; Pick_2_th2; Pick_2_th3];
+P_place_2_rad = [Place_2_th1; Place_2_th2; Place_2_th3];
 
 % Position holding time
 % P_org->A, Pick1->B, Place1->C, Pick2->D, Place2->E
@@ -98,7 +105,8 @@ dtheta1 = 0; dtheta2 = 0; dtheta3 = 0;
 ang = [theta1; theta2; theta3; dtheta1; dtheta2; dtheta3];
 
 % Plot the solution for t=0 to T8
-t = [0, T8];
+dt = 1/120;                 % 帧间隔
+t = 0:dt:T8; 
 ode45_function_component = @(t,x)closedloop_3R(t,x,params_eom);
 [t, x] = ode45(ode45_function_component, t, ang);
 
@@ -107,17 +115,73 @@ ode45_function_component = @(t,x)closedloop_3R(t,x,params_eom);
 figure;
 hold on; grid on;
 centers = [0, 0];
-xlim([0,30]);
-ylim([0,30]);
+xlim([-2,30]);
+ylim([-2,30]);
 xlabel('X(m)'); ylabel('Y(m)');
 title('Final Project Pick-and-Place 3R Planar Arm')
 
+% End Effector position
+P_org_ee = [0; 0];
+plot(P_org_ee(1), P_org_ee(2), 'ko','MarkerFaceColor','k', 'DisplayName','Start EE');
+plot(P_pick_1_xy(1), P_pick_1_xy(2), 'go','MarkerFaceColor','g', 'DisplayName','Pick 1 EE');
+plot(P_place_1_xy(1), P_place_1_xy(2), 'ro','MarkerFaceColor','r', 'DisplayName','Place 1 EE');
+plot(P_pick_2_xy(1), P_pick_2_xy(2), 'go','MarkerFaceColor','b', 'DisplayName','Pick 2 EE');
+plot(P_place_2_xy(1), P_place_2_xy(2), 'ro','MarkerFaceColor','c', 'DisplayName','Place 2 EE');
+legend show;
+
+% link plot from the source "How to move object on a curve in Matlab" in Youtube
+% https://www.youtube.com/watch?v=lDMSZ3tCq5I
+hLink1 = plot([0,0],[0,0], '-o', 'LineWidth',3,'MarkerSize',6,'MarkerFaceColor',[0.2 0.6 1.0], 'Color',[0.1 0.3 0.8],'DisplayName','link1');
+hLink2 = plot([0,0],[0,0], '-o', 'LineWidth',3,'MarkerSize',6,'MarkerFaceColor',[0.2 0.6 1.0], 'Color',[0.8 0.1 0.5],'DisplayName','link2');
+hLink3 = plot([0,0],[0,0], '-o', 'LineWidth',3,'MarkerSize',6,'MarkerFaceColor',[0.2 0.6 1.0], 'Color',[0.2 0.3 0.4],'DisplayName','link3');
+hTrace = plot(nan, nan,':', 'Color',[0.5 0.5 0.5]);
+ee_trace = nan(length(t), 2);
+for k = 1:length(t)
+    q1 = x(k,1); q2 = x(k,2); q3 = x(k,3);
+    p0 = [0;0];
+    p1 = p0 + [L1*cos(q1); L1*sin(q1)];
+    p2 = p1 + [L2*cos(q1+q2); L2*sin(q1+q2)];
+    p3 = p2 + [L3*cos(q1+q2+q3); L3*sin(q1+q2+q3)];
+    set(hLink1,'XData',[p0(1) p1(1)], 'YData',[p0(2) p1(2)]);
+    set(hLink2,'XData',[p1(1) p2(1)], 'YData',[p1(2) p2(2)]);
+    set(hLink3,'XData',[p2(1) p3(1)], 'YData',[p2(2) p3(2)]);
+    ee_trace(k,:) = p3.';
+    set(hTrace, 'XData', ee_trace(1:k,1), 'YData', ee_trace(1:k,2));
+    drawnow;
+
+    if k < length(t)
+        pause(max(0, t(k+1)-t(k)));
+    end
+end
 
 % Inverse Kinematic solution(written by hand, source from HW4 solution)
 function [theta1, theta2, theta3] = IK_component(target_xy, L1, L2, L3)
-    phi = -deg2rad(45); % constant value, can be changed in code
-    wx = target_xy(1) - L3*cos(phi);
-    wy = target_xy(2) - L3*sin(phi);
+    x = target_xy(1); y = target_xy(2);
+    
+    r = hypot(x, y);
+    if r < 1e-12
+        phi = 0;  % original point
+    else
+        phi = atan2(y, x);
+    end
+    wx = x - L3*cos(phi);
+    wy = y - L3*sin(phi);
+    
+    d = hypot(wx, wy);
+    d_min = max(1e-9, abs(L1 - L2) + 1e-9);
+    d_max = L1 + L2 - 1e-9;
+    if d < d_min
+        if d < 1e-12 % if w is very close to the origin, place it at d_min along the phi direction
+            wx = d_min * cos(phi);
+            wy = d_min * sin(phi);
+        else
+            scale = d_min / d;
+            wx = wx * scale; wy = wy * scale;
+        end
+    elseif d > d_max
+        scale = d_max / d;
+        wx = wx * scale; wy = wy * scale;
+    end
  
     % source from Lecture 11 Page 2
     beta_temp = (L1^2 + L2^2 - wx^2 - wy^2)/(2*L1*L2); % if not doing this, the simulation would be stuck and stopped
@@ -127,24 +191,11 @@ function [theta1, theta2, theta3] = IK_component(target_xy, L1, L2, L3)
     alpha_temp = max(min(alpha_temp, 1), -1);
     alpha = acos(alpha_temp);
     gamma = atan2(wy, wx);
-    theta1 = gamma - alpha;
-    theta2 = pi - beta;
-    theta3 = phi - theta1 - theta2;
-    
-%     r2 = wx^2 + wy^2;
-%     c2 = max(min((r2 - L1^2 - L2^2)/(2*L1*L2), 1), -1);  % cos(theta2)
-%     s2 = -sqrt(max(0, 1 - c2^2));  % sin(theta2)
-%     theta2 = atan2(s2, c2);
-% 
-%     k1 = L1 + L2*c2;
-%     k2 = L2*s2;
-%     theta1 = atan2(wy, wx) - atan2(k2, k1);
-%     theta3 = phi - theta1 - theta2;
-%     
-%     theta1 = mod(theta1 + pi, 2*pi) - pi;
-%     theta2 = mod(theta2 + pi, 2*pi) - pi;
-%     theta3 = mod(theta3 + pi, 2*pi) - pi;
-    
+%     theta1 = gamma - alpha; % theta1 down
+%     theta2 = pi - beta; % theta2 up
+    theta1 = gamma + alpha;
+    theta2 = -(pi - beta);
+    theta3 = phi - theta1 - theta2;  
 end
 
 % Use element from EoM to build PD controler, equation source from Lecture17 Page 4 and Page 9
@@ -352,6 +403,3 @@ function output = ddqd_piece(t, params_destination)
     end
     output = ddq(:);
 end
-
-
-
